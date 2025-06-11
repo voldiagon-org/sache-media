@@ -4,83 +4,231 @@
   <meta charset="UTF-8">
   <title>Sache Media</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="icon" type="image/svg+xml" href="https://www.svgrepo.com/show/374133/video.svg">
   <style>
     body { margin:0; font-family: 'Segoe UI',Arial,sans-serif; background: #111; color: #eee;}
     header { background: #1a1a1a; padding: 1rem 0; text-align: center; box-shadow: 0 2px 12px #0003;}
     .logo { font-size: 2rem; font-weight: bold; color: #fff; letter-spacing: 2px;}
     .accent { color: #1db954; }
     .container { max-width: 900px; margin: 2rem auto; background: #222; border-radius: 10px; box-shadow: 0 4px 24px #0005; padding: 2rem;}
-    .upload-bar, .search-bar { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
-    .upload-bar input[type="file"] { display: none; }
-    .upload-btn { background: #1db954; color: #fff; border: none; padding: 0.7rem 1.3rem; border-radius: 5px; font-size: 1.1rem; cursor: pointer;}
-    .search-bar input[type="text"] { flex: 1; padding: 0.7rem 1rem; border-radius: 5px; border: none; background: #2a2a2a; color: #fff; }
-    .video-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap: 2rem;}
+    nav { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    nav button { background: #181818; color: #1db954; border: none; padding: 0.7rem 1.5rem; border-radius: 5px; font-size: 1.1rem; cursor: pointer;}
+    nav button.active { background: #1db954; color: #fff; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 2rem;}
     .video-card { background: #181818; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px #0005; position: relative; }
-    .video-card video { width: 100%; display: block; background: #000;}
+    .video-card video, .video-card img { width: 100%; display: block; background: #000;}
     .video-info { padding: 1rem; }
     .video-title { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; word-break: break-all;}
+    .timestamp { color: #666; font-size: 0.9em; float: right;}
     .like-btn { background: none; border: none; color: #1db954; font-size: 1.2rem; cursor: pointer; padding: 0; vertical-align: middle;}
     .like-count { color: #aaa; margin-left: 0.5rem; font-size: 1rem; }
-    .timestamp { color: #666; font-size: 0.9em; float: right;}
+    .upload-btn { background: #1db954; color: #fff; border: none; padding: 0.7rem 1.3rem; border-radius: 5px; font-size: 1.1rem; cursor: pointer;}
+    .upload-btn input[type="file"] { display: none; }
+    .short-thumb { aspect-ratio: 9/16; object-fit: cover; }
+    .live-video { background: #000; color: #fff; height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 1rem; }
+    .live-label { background: #e74c3c; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; position: absolute; top: 10px; left: 10px; }
+    .userbar { float: right; margin-right: 2rem; color: #fff; }
+    #signInModal { background: rgba(0,0,0,0.8); position: fixed; top:0; left:0; right:0; bottom:0; z-index: 10; display: flex; align-items: center; justify-content: center; }
+    #signInModal .modal-content { background: #222; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 24px #0008; text-align: center;}
+    #signInModal input { padding: 0.7rem 1rem; border-radius: 5px; border: none; background: #2a2a2a; color: #fff; font-size: 1rem;}
+    #signInModal button { margin-top: 1.2rem; background: #1db954; color: #fff; border: none; padding: 0.7rem 1.3rem; border-radius: 5px; font-size: 1.1rem; cursor: pointer;}
     @media (max-width: 650px) {
       .container { padding: 0.5rem; }
       .video-info { padding: 0.7rem;}
       .video-grid { gap: 1rem;}
+      nav { flex-direction: column; gap: 0.3rem;}
+      .userbar { float:none; margin:0; display:block; text-align:center; margin-bottom:1rem;}
     }
   </style>
 </head>
 <body>
   <header>
     <span class="logo"><span class="accent">Sache</span> Media</span>
-    <div style="font-size:1rem;color:#aaa;margin-top:0.3rem;">A YouTube-like social platform. No phone number needed!</div>
+    <span class="userbar" id="userbar"></span>
+    <div style="font-size:1rem;color:#aaa;margin-top:0.3rem;">YouTube-like platform - sign in with any username, no phone needed</div>
   </header>
   <div class="container">
-    <form class="upload-bar" onsubmit="return false;">
-      <label for="video-upload" class="upload-btn">Upload Video</label>
-      <input type="file" id="video-upload" accept="video/*" />
-    </form>
-    <form class="search-bar" onsubmit="return false;">
-      <input type="text" id="search-box" placeholder="Search videos...">
-    </form>
-    <div class="video-grid" id="video-grid"></div>
-    <div id="no-videos" style="text-align:center; color:#555; margin-top:2rem; display:none;">No videos found.</div>
+    <nav>
+      <button id="navShorts" onclick="showSection('shorts')">Shorts</button>
+      <button id="navVideos" onclick="showSection('videos')">Videos</button>
+      <button id="navLive" onclick="showSection('live')">Live</button>
+      <button id="navCreateShort" onclick="showSection('create-short')">+ Create Short</button>
+      <button id="navCreateVideo" onclick="showSection('create-video')">+ Create Video</button>
+      <button id="navCreateLive" onclick="showSection('create-live')">+ Go Live</button>
+    </nav>
+    <div id="shorts" class="section">
+      <h2>Shorts</h2>
+      <div class="video-grid" id="shortsGrid"></div>
+      <div id="shortsNone" style="text-align:center; color:#555; margin-top:2rem; display:none;">No shorts yet.</div>
+    </div>
+    <div id="videos" class="section">
+      <h2>Videos</h2>
+      <div class="video-grid" id="videosGrid"></div>
+      <div id="videosNone" style="text-align:center; color:#555; margin-top:2rem; display:none;">No videos yet.</div>
+    </div>
+    <div id="live" class="section">
+      <h2>Live Now</h2>
+      <div class="video-grid" id="liveGrid"></div>
+      <div id="liveNone" style="text-align:center; color:#555; margin-top:2rem; display:none;">No one is live.</div>
+    </div>
+    <div id="create-short" class="section">
+      <h2>Create Short</h2>
+      <form id="shortForm" onsubmit="return false;">
+        <input type="file" accept="video/*,image/*" id="shortFile" required><br><br>
+        <input type="text" id="shortTitle" placeholder="Short title" required style="width:60%"><br><br>
+        <button class="upload-btn" type="submit">Upload Short</button>
+      </form>
+    </div>
+    <div id="create-video" class="section">
+      <h2>Create Video</h2>
+      <form id="videoForm" onsubmit="return false;">
+        <input type="file" accept="video/*" id="videoFile" required><br><br>
+        <input type="text" id="videoTitle" placeholder="Video title" required style="width:60%"><br><br>
+        <button class="upload-btn" type="submit">Upload Video</button>
+      </form>
+    </div>
+    <div id="create-live" class="section">
+      <h2>Go Live</h2>
+      <form id="liveForm" onsubmit="return false;">
+        <input type="text" id="liveTitle" placeholder="Live stream title" required style="width:60%"><br><br>
+        <button class="upload-btn" type="submit">Start Live</button>
+      </form>
+    </div>
+  </div>
+  <div id="signInModal">
+    <div class="modal-content">
+      <h2>Sign in to Sache Media</h2>
+      <input type="text" id="signInInput" placeholder="Enter a username" autofocus required><br>
+      <button onclick="signIn()">Sign In</button>
+    </div>
   </div>
   <script>
-    // State: In-memory videos
-    let videos = [
-      {
-        title: "Welcome to Sache Media!",
-        src: "https://www.w3schools.com/html/mov_bbb.mp4",
-        likes: 5,
-        timestamp: new Date(Date.now()-86400000).toLocaleString()
-      },
-      {
-        title: "Sample Cat Video",
-        src: "https://www.w3schools.com/html/movie.mp4",
-        likes: 2,
-        timestamp: new Date(Date.now()-3600000).toLocaleString()
-      }
-    ];
+    // State
+    let user = null;
+    let shorts = [];
+    let videos = [];
+    let liveStreams = [];
 
-    // Render
-    function renderVideos(filter = '') {
-      const grid = document.getElementById('video-grid');
-      grid.innerHTML = '';
-      const filtered = videos.filter(v => v.title.toLowerCase().includes(filter.toLowerCase()));
-      if(filtered.length === 0) {
-        document.getElementById('no-videos').style.display = '';
+    // Show section
+    function showSection(section) {
+      for(const s of ["shorts","videos","live","create-short","create-video","create-live"])
+        document.getElementById(s).classList.remove("active");
+      document.getElementById(section).classList.add("active");
+      // nav active
+      for(const nav of ["navShorts","navVideos","navLive","navCreateShort","navCreateVideo","navCreateLive"])
+        document.getElementById(nav).classList.remove("active");
+      document.getElementById("nav"+section.charAt(0).toUpperCase()+section.slice(1).replace("-","")).classList.add("active");
+      // refresh what needs to be shown
+      if(section==="shorts") renderShorts();
+      if(section==="videos") renderVideos();
+      if(section==="live") renderLive();
+    }
+
+    // Sign in logic
+    function signIn() {
+      const val = document.getElementById('signInInput').value;
+      if(val.trim().length < 2) {
+        alert("Username too short!");
         return;
-      } else {
-        document.getElementById('no-videos').style.display = 'none';
       }
-      filtered.forEach((v, i) => {
+      user = val.trim();
+      document.getElementById('userbar').innerText = "👤 "+user;
+      document.getElementById('signInModal').style.display='none';
+      showSection('shorts');
+    }
+    // Enter on input
+    document.getElementById('signInInput').addEventListener('keydown', e=>{
+      if(e.key==="Enter") signIn();
+    });
+
+    // Short upload
+    document.getElementById('shortForm').onsubmit = function() {
+      const file = document.getElementById('shortFile').files[0];
+      const title = document.getElementById('shortTitle').value.trim();
+      if(!file || !title) return;
+      const url = URL.createObjectURL(file);
+      shorts.unshift({
+        title,
+        url,
+        type: file.type.startsWith("video/") ? "video" : "image",
+        user,
+        timestamp: new Date().toLocaleString()
+      });
+      document.getElementById('shortForm').reset();
+      showSection('shorts');
+      renderShorts();
+    };
+
+    // Video upload
+    document.getElementById('videoForm').onsubmit = function() {
+      const file = document.getElementById('videoFile').files[0];
+      const title = document.getElementById('videoTitle').value.trim();
+      if(!file || !title) return;
+      const url = URL.createObjectURL(file);
+      videos.unshift({
+        title,
+        url,
+        user,
+        likes: 0,
+        timestamp: new Date().toLocaleString()
+      });
+      document.getElementById('videoForm').reset();
+      showSection('videos');
+      renderVideos();
+    };
+
+    // Go live (simulated)
+    document.getElementById('liveForm').onsubmit = function() {
+      const title = document.getElementById('liveTitle').value.trim();
+      if(!title) return;
+      liveStreams.unshift({
+        title,
+        user,
+        timestamp: new Date().toLocaleString(),
+        live: true
+      });
+      document.getElementById('liveForm').reset();
+      showSection('live');
+      renderLive();
+    };
+
+    // Render Shorts
+    function renderShorts() {
+      const grid = document.getElementById('shortsGrid');
+      grid.innerHTML = '';
+      if(shorts.length===0) { document.getElementById('shortsNone').style.display=''; return;}
+      else { document.getElementById('shortsNone').style.display='none'; }
+      shorts.forEach(s=>{
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.innerHTML =
+          (s.type==="video"
+            ? `<video controls class="short-thumb" src="${s.url}" poster="https://placehold.co/300x533/000/FFF?text=Short"></video>`
+            : `<img src="${s.url}" class="short-thumb" alt="Short image">`) +
+          `<div class="video-info">
+            <div class="video-title">${escapeHTML(s.title)}</div>
+            <div style="font-size:.95em;color:#aaa;">By ${escapeHTML(s.user)}</div>
+            <span class="timestamp">${s.timestamp}</span>
+          </div>`;
+        grid.appendChild(card);
+      });
+    }
+
+    // Render Videos
+    function renderVideos() {
+      const grid = document.getElementById('videosGrid');
+      grid.innerHTML = '';
+      if(videos.length===0) { document.getElementById('videosNone').style.display=''; return;}
+      else { document.getElementById('videosNone').style.display='none'; }
+      videos.forEach((v,i)=>{
         const card = document.createElement('div');
         card.className = 'video-card';
         card.innerHTML = `
-          <video controls src="${v.src}" poster="https://placehold.co/600x337/000/FFF?text=Sache+Media"></video>
+          <video controls src="${v.url}" poster="https://placehold.co/600x337/000/FFF?text=Video"></video>
           <div class="video-info">
             <div class="video-title">${escapeHTML(v.title)}</div>
+            <div style="font-size:.95em;color:#aaa;">By ${escapeHTML(v.user)}</div>
             <button class="like-btn" onclick="likeVideo(${i})" title="Like">&#128077;</button>
             <span class="like-count" id="like-count-${i}">${v.likes}</span>
             <span class="timestamp">${v.timestamp}</span>
@@ -89,6 +237,33 @@
         grid.appendChild(card);
       });
     }
+    window.likeVideo = function(idx) {
+      videos[idx].likes++;
+      renderVideos();
+    };
+
+    // Render Live
+    function renderLive() {
+      const grid = document.getElementById('liveGrid');
+      grid.innerHTML = '';
+      if(liveStreams.length===0) { document.getElementById('liveNone').style.display=''; return;}
+      else { document.getElementById('liveNone').style.display='none'; }
+      liveStreams.forEach(l=>{
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.innerHTML = `
+          <div class="live-video">
+            <span>${escapeHTML(l.user)} is live: <b>${escapeHTML(l.title)}</b></span>
+            <span class="live-label">LIVE</span>
+          </div>
+          <div class="video-info">
+            <span class="timestamp">${l.timestamp}</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
     function escapeHTML(str) {
       return str.replace(/[&<>"']/g, function(m) {
         return ({
@@ -96,35 +271,31 @@
         })[m];
       });
     }
-    // Like function
-    window.likeVideo = function(idx) {
-      videos[idx].likes++;
-      renderVideos(document.getElementById('search-box').value);
-    }
 
-    // Upload
-    document.getElementById('video-upload').addEventListener('change', function(e) {
-      const file = this.files[0];
-      if(file && file.type.startsWith('video/')) {
-        const url = URL.createObjectURL(file);
-        const title = prompt('Enter a title for your video:', file.name.replace(/\.[^/.]+$/, ""));
-        if(title) {
-          videos.unshift({
-            title: title, src: url, likes: 0, timestamp: new Date().toLocaleString()
-          });
-          renderVideos(document.getElementById('search-box').value);
-        }
-      }
-      this.value = '';
+    // Initial state
+    showSection('shorts');
+    document.getElementById('signInModal').style.display = '';
+    // For demo: add a sample video, short, and live
+    shorts.push({
+      title:"Welcome to Sache Shorts!",
+      url:"https://placekitten.com/300/533",
+      type:"image",
+      user:"Admin",
+      timestamp: new Date(Date.now()-86400000).toLocaleString()
     });
-
-    // Search
-    document.getElementById('search-box').addEventListener('input', function() {
-      renderVideos(this.value);
+    videos.push({
+      title:"Welcome to Sache Videos!",
+      url:"https://www.w3schools.com/html/mov_bbb.mp4",
+      user:"Admin",
+      likes:3,
+      timestamp: new Date(Date.now()-3600000).toLocaleString()
     });
-
-    // Initial render
-    renderVideos();
+    liveStreams.push({
+      title:"Q&A with Sache Media devs",
+      user:"Admin",
+      timestamp: new Date(Date.now()-600000).toLocaleString(),
+      live:true
+    });
   </script>
 </body>
 </html>
