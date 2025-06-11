@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sache media</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6fb; margin:0; }
+    header {
+      background: #1877f2; color: #fff;
+      padding: 1rem 0; text-align: center;
+    }
+    nav {
+      display: flex; justify-content: space-around;
+      background: #fff; border-bottom: 1px solid #ddd;
+    }
+    nav button {
+      background: none; border: none; font-size: 1.1em; padding: 1rem;
+      cursor: pointer; color: #1877f2; font-weight: bold;
+    }
+    nav button.active { border-bottom: 2px solid #1877f2; }
+    #mainContent { max-width: 600px; margin: 2rem auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 10px #0001; padding: 2rem; min-height: 400px;}
+    .hidden { display: none; }
+    /* Contacts */
+    .contact-list { list-style: none; padding: 0; }
+    .contact-list li { display: flex; align-items: center; margin-bottom: 1rem; }
+    .contact-avatar { width: 40px; height: 40px; border-radius: 50%; background: #eee; margin-right: 1rem; }
+    /* Posts */
+    #postForm { display: flex; gap: 10px; margin-bottom: 20px; }
+    #postInput { flex: 1; padding: 8px; border: 1px solid #bbb; border-radius: 4px; }
+    #postButton { padding: 8px 16px; background: #1877f2; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    .post { background: #f9f9f9; border: 1px solid #eee; border-radius: 6px; padding: 12px; margin-bottom: 15px; position: relative; }
+    .like-btn { background: none; border: none; color: #1877f2; cursor: pointer; font-weight: bold; }
+    .like-count { margin-left: 6px; color: #555; }
+    .timestamp { font-size: 0.85em; color: #999; position: absolute; right: 10px; bottom: 10px; }
+    /* Videos / Shorts */
+    .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .video-card { background: #eee; border-radius: 8px; overflow: hidden; }
+    .video-card video, .video-card img { width: 100%; display: block; }
+    .video-title { padding: 8px 12px; font-size: 1em; }
+    /* Live */
+    .live-video { background: #000; color: #fff; height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 1rem; }
+    .live-label { background: #e74c3c; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; position: absolute; top: 10px; left: 10px; }
+    .live-controls { margin-top: 1rem; }
+    .upload-btn { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Social Media Demo</h1>
+  </header>
+  <nav>
+    <button id="tabPosts" class="active" onclick="showTab('Posts')">Posts</button>
+    <button id="tabContacts" onclick="showTab('Contacts')">Contacts</button>
+    <button id="tabLive" onclick="showTab('Live')">Live Videos</button>
+    <button id="tabVideos" onclick="showTab('Videos')">Videos</button>
+    <button id="tabShorts" onclick="showTab('Shorts')">Shorts</button>
+  </nav>
+  <div id="mainContent">
+    <!-- Posts -->
+    <div id="viewPosts">
+      <form id="postForm">
+        <input id="postInput" type="text" maxlength="140" placeholder="What's on your mind?" required />
+        <button id="postButton" type="submit">Post</button>
+      </form>
+      <div id="posts"></div>
+    </div>
+
+    <!-- Contacts -->
+    <div id="viewContacts" class="hidden">
+      <h2>Your Contacts</h2>
+      <ul class="contact-list" id="contactsList"></ul>
+      <form id="addContactForm" style="margin-top:1rem;">
+        <input type="text" id="contactName" placeholder="Add contact name" required>
+        <button type="submit">Add Contact</button>
+      </form>
+    </div>
+
+    <!-- Live Videos -->
+    <div id="viewLive" class="hidden">
+      <h2>Live Videos</h2>
+      <div class="live-video" id="liveVideoArea">
+        <span>🔴 Live Stream Simulation</span>
+      </div>
+      <div class="live-controls">
+        <button onclick="alert('This is a simulated Go Live button!')">Go Live</button>
+        <button onclick="alert('Simulated Join Live')">Join Live</button>
+      </div>
+      <h3>Currently Live:</h3>
+      <ul>
+        <li>Jane Doe - <span style="color:#e74c3c">● Live</span></li>
+        <li>John Smith - <span style="color:#e74c3c">● Live</span></li>
+      </ul>
+    </div>
+
+    <!-- Videos -->
+    <div id="viewVideos" class="hidden">
+      <h2>Videos</h2>
+      <button class="upload-btn" onclick="alert('Simulated upload video!')">Upload Video</button>
+      <div class="video-grid" id="videoGrid">
+        <!-- Simulated video cards -->
+      </div>
+    </div>
+
+    <!-- Shorts -->
+    <div id="viewShorts" class="hidden">
+      <h2>Shorts</h2>
+      <button class="upload-btn" onclick="alert('Simulated upload short!')">Upload Short</button>
+      <div class="video-grid" id="shortsGrid">
+        <!-- Simulated short cards -->
+      </div>
+    </div>
+  </div>
+  <script>
+    // Navigation
+    function showTab(tabName) {
+      const tabs = ['Posts','Contacts','Live','Videos','Shorts'];
+      tabs.forEach(t => {
+        document.getElementById('view'+t).classList.add('hidden');
+        document.getElementById('tab'+t).classList.remove('active');
+      });
+      document.getElementById('view'+tabName).classList.remove('hidden');
+      document.getElementById('tab'+tabName).classList.add('active');
+    }
+
+    // Posts
+    const posts = [];
+    document.getElementById('postForm').onsubmit = function(e) {
+      e.preventDefault();
+      const input = document.getElementById('postInput');
+      if (input.value.trim()) {
+        posts.push({
+          text: input.value.trim(),
+          likes: 0,
+          timestamp: new Date().toLocaleTimeString()
+        });
+        input.value = '';
+        renderPosts();
+      }
+    };
+    function likePost(idx) {
+      posts[idx].likes++;
+      renderPosts();
+    }
+    function renderPosts() {
+      const postsDiv = document.getElementById('posts');
+      postsDiv.innerHTML = '';
+      posts.slice().reverse().forEach((post, idx) => {
+        const postDiv = document.createElement('div');
+        postDiv.className = 'post';
+        postDiv.innerHTML = `
+          <div>${escapeHTML(post.text)}</div>
+          <button class="like-btn" onclick="likePost(${posts.length-1-idx})">👍 Like</button>
+          <span class="like-count">${post.likes} likes</span>
+          <span class="timestamp">${post.timestamp}</span>
+        `;
+        postsDiv.appendChild(postDiv);
+      });
+    }
+    window.likePost = likePost;
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[m];
+      });
+    }
+
+    // Contacts
+    const contacts = [
+      {name: 'Jane Doe', avatar: 'https://randomuser.me/api/portraits/women/44.jpg'},
+      {name: 'John Smith', avatar: 'https://randomuser.me/api/portraits/men/32.jpg'}
+    ];
+    function renderContacts() {
+      const list = document.getElementById('contactsList');
+      list.innerHTML = '';
+      contacts.forEach((contact, idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <img class="contact-avatar" src="${contact.avatar}" alt="avatar" />
+          <span>${contact.name}</span>
+          <button style="margin-left:auto" onclick="removeContact(${idx})">Remove</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+    function removeContact(idx) {
+      contacts.splice(idx, 1);
+      renderContacts();
+    }
+    window.removeContact = removeContact;
+    document.getElementById('addContactForm').onsubmit = function(e) {
+      e.preventDefault();
+      const input = document.getElementById('contactName');
+      if(input.value.trim()) {
+        contacts.push({
+          name: input.value.trim(),
+          avatar: "https://randomuser.me/api/portraits/lego/3.jpg"
+        });
+        input.value = '';
+        renderContacts();
+      }
+    };
+
+    // Videos & Shorts (simulated)
+    const sampleVideos = [
+      {title: "My First Vlog", src: "https://www.w3schools.com/html/mov_bbb.mp4"},
+      {title: "Dog Playing", src: "https://www.w3schools.com/html/movie.mp4"},
+    ];
+    const sampleShorts = [
+      {title: "Funny Cat", thumb: "https://placekitten.com/200/300"},
+      {title: "Dance Clip", thumb: "https://placekitten.com/200/301"},
+      {title: "Magic Trick", thumb: "https://placekitten.com/200/302"},
+    ];
+    function renderVideos() {
+      const grid = document.getElementById('videoGrid');
+      grid.innerHTML = '';
+      sampleVideos.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.innerHTML = `
+          <video controls src="${v.src}" poster="https://placehold.co/400x225?text=Video"></video>
+          <div class="video-title">${v.title}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+    function renderShorts() {
+      const grid = document.getElementById('shortsGrid');
+      grid.innerHTML = '';
+      sampleShorts.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.innerHTML = `
+          <img src="${s.thumb}" alt="Short thumbnail">
+          <div class="video-title">${s.title}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Initial render
+    renderPosts();
+    renderContacts();
+    renderVideos();
+    renderShorts();
+  </script>
+</body>
+</html>
